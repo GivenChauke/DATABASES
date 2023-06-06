@@ -11,29 +11,57 @@
         <div id = "container">
            <form id = "myForm"  >
             <label for="name">Name:</label>
-            <input type="text" name="name" id="name"><br>
+            <input type="name" name="name" id="name"><br>
             <label for="surname">Surname:</label>
             <input type="surname" name="surname" id="surname"><br>
+            <label for="country">Select your Country:</label>
+            <select name="country" id="country"></select>
             <label for="email">Email:</label>
             <input type="email" name="email" id="email"><br> 
             <label for="password">Password:</label>
-            <input type="password" name="password" id="password"><br> 
-            <label for="manager">Are you a manager (yes/no):</label>
-            <input type="text" name="manager" id="manager"><br>        
+            <input type="password" name="password" id="password"><br>       
             <input type="submit" value="SignUp" id="submit"><br>
             <a href="login.php" >Already have an account?</a>
+            <a href="managerSignUp.php" >Are you a manager?</a>
         </form>
         </div>
         <?php
         include ('footer.php');
         ?>
         <script>
+            window.onload = init;
+            function init(){
+            const countrySelect = document.getElementById('country');
+
+            fetch('https://restcountries.com/v3.1/all')
+            .then(response => response.json())
+            .then(data => {
+                data.sort((a, b) => {
+                const nameA = a.name.common.toUpperCase();
+                const nameB = b.name.common.toUpperCase();
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+                return 0;
+                });
+            data.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.cca2;
+                option.text = country.name.common;
+                countrySelect.appendChild(option);
+            });
+            })
+            .catch(error => {
+            console.error('Error fetching country data:', error);
+            });
             const form = document.getElementById("myForm");
             const name = document.getElementById("name");
             const surname = document.getElementById("surname");
             const email = document.getElementById("email");
             const pass = document.getElementById("password");
-            const manager = document.getElementById("manager");
            form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			const isValid = validate();
@@ -60,13 +88,6 @@
             return false;
             }
         }
-            function validateManagerText(input)
-            {
-                var text = input.trim();
-                if(text === 'yes'|| text === 'no')
-                return true;
-                else return false;
-            }
            function validate(){
             if(name.value === "") 
             {
@@ -93,16 +114,6 @@
             else if(validatePassword(pass.value) == false) 
            {alert("Your pass is not strong enough:\n it must be 8 characters long, contain lower and upper case letter\n and atleast one digit and symbol");
            return false;}
-           if(manager.value==="")
-            {
-                alert("please answer if you are a manager or not");
-                return false;
-            }
-            else if(validateManagerText(manager.value)===false)
-            {
-                alert("manager answer can either be yes or no");
-                return false;
-            }
            return true;
            
            }
@@ -145,7 +156,7 @@
 			xhr.send(`name=${name.value}&surname=${surname.value}&email=${email.value}&password=${password.value}`);
             
 		};*/
-
+    }
 	</script>
     </body>
 </HTML>
