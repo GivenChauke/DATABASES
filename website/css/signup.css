@@ -1,5 +1,5 @@
 body{
-	background-image: url("../img/img3.jpg");
+	background-image: url("../img/img4.jpg");
 	background-size:cover;
   font-family: Arial, sans-serif;
 }
@@ -33,9 +33,16 @@ label {
   font-weight: bold;
   margin-bottom: 5px;
 }
-
+input[type="radio"]{
+  display: block;
+  font-weight: bold;
+}
 input[type="email"],
-input[type="password"] {
+input[type="password"] ,
+input[type="name"],
+input[type="surname"],
+select,
+input[type="Wineryname"]{
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
