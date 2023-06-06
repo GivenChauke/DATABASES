@@ -116,7 +116,7 @@ body{
         transform:rotate(1turn);
     }
 }
-#head {
+#head,h2 {
     text-align: center;
     padding: 20px;
     background-color: #333;
@@ -203,10 +203,46 @@ body{
   transition: all 0.2s ease;
   float:right;
 }
+.ratingButton{
+  width:100%;
+  height:30px;
+  background-color: cyan;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 input:not(:checked) ~ label:hover,
 input:not(:checked) ~ label:hover ~ label{
   color: #fd4;
 }
 input:checked ~ label{
   color:#fd4;
+}
+
+#sort {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.sort-options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+#sort-select {
+  padding: 5px;
+}
+
+#sort-button {
+  padding: 5px 10px;
+  background-color: black;
+  color: whitesmoke;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#sort-button:hover {
+  background-color:darkslategray;
 }
