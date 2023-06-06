@@ -14,8 +14,6 @@ class Database{
         if($this->connection->error){
             die("Error lol".$this->connection->error);
         }
-        else echo "This connection did am successful";
-
         try{$this->connection->select_db("u22747886_WINE");}
         catch (mysqli_sql_exception $e){
             echo $e;

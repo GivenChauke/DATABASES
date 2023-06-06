@@ -1,49 +1,15 @@
 <?php
 include "config.php";
-// echo "Your mum am fat";
-// $connection = Database::instance();
-// $result = $connection->connection->query("select * from Wines
-//                                             limit 100;");
-
-$response = Array(
-    "status" => "success",
-    "message" => "Operation was successful",
-    "method" => "GetAllWineries",
-    "timestamp" => time(),
-    "data" => Array()
-);
-
-$request = Array(
-        "method"=>"GetAllWineries",
-        "sort" => ["WineryName", "StreetName", "City", "Province"],
-        "order" => "ASC",
-        "search"=>Array(
-            "WineryName" => "Winey",
-            "StreetName"=>"Yes",
-            "City" => "CityNam",
-            "Province"=>"proovin"
-        )
-    );
-
-
-
-while ($tuple = $result->fetch_assoc()){
-    array_push($response["data"], $tuple);
-}
-
-//print_r ($response);
-
-
 class Clients{
-
-
-
     private $response = null;
-    public function __construct(){
-        echo "<br>Client object created and shit <br>";
+    private $request = null;
+    public function __construct($json){
+        $this->request = json_decode($json, true);
     }
 
-    public function login($details, $manager){
+    public function login(){
+        $details = $this->request["details"];
+        $manager = $this->request["manager"];
         if($this->emailExists($details["Email"], $manager)){
             $email = $details["Email"];
             $connection = Database::instance()->connection;
@@ -59,31 +25,34 @@ class Clients{
             $result = $statement->get_result()->fetch_assoc();
             if(!password_verify($details["Password"].$result["Salt"], $result["Password"])){
                 header("HTTP Status 200");
-                return json_encode(Array(
+                $this->response = json_encode(Array(
                     "method" => "login",
                     "status" => "error",
                     "message" => "Incorrect password, please try again.",
                     "timestamp"=> time()
                 ));
+                return $this->response;
             }else{
                 header("HTTP Status 200");
-                return json_encode(Array(
+                $this->response = json_encode(Array(
                     "method" => "login",
                     "status" => "success",
                     "message" => "Access granted.",
                     "timestamp"=> time()
                 ));
+                return $this->response;
             }
 
         }else{
             $email = $details["Email"];
             header("HTTP Status 200");
-            return json_encode(Array(
+            $this->response = json_encode(Array(
                 "method" => "login",
                 "status" => "error",
                 "message" => "User with email address `$email` does not exist. Maybe try creating a new account.",
                 "timestamp"=> time()
             ));
+            return $this->response;
         }
 
     }
@@ -120,17 +89,20 @@ class Clients{
             }else return true;
         }
     }
-    public function signup($details, $manager){
+    public function signup(){
+        $details = $this->request["details"];
+        $manager = $this->request["manager"];
         $connection = Database::instance();
         if($this->emailExists($details["Email"], $manager)){
             header("HTTP Status 200");
             $email = $details["Email"];
-            return json_encode(Array(
+            $this->response = json_encode(Array(
                 "method" => "signup",
                 "status" => "error",
                 "message" => "User with email address `$email` already exists. Please enter a different email address",
                 "timestamp"=> time()
             ));
+            return $this->response;
         }
             $salt = $this->generateSalt();
             $query = "";
@@ -153,26 +125,102 @@ class Clients{
             $statement->execute();
 
         header("HTTP Status 200");
-        $this->response = Array(
+        $this->response = json_encode(Array(
             "method" => "signup",
             "status" => "success",
             "message" => "User successfully created",
             "timestamp"=> time()
-        );
-        return json_encode($this->response);
+        ));
+        return ($this->response);
 
     }
 }
+
 
 class Winery{
-    private $clients;
+    private $request;
+    private $response;
+    private $sortArray = ["AverageRating", "WineName", "Price", "AlcoholPercentage", "Year", "Type", "Region", "Varietal"];
+    private $searchArray = ["AverageRating", "WineName", "Price", "AlcoholPercentage", "Year", "Type", "Region", "Varietal"];
     public function __construct($json){
+        $this->request = json_decode($json);
+        $this->validateRequest();
+    }
+    private function validateRequest(){
+
+    }
+    public function getResult(){
+        $query = $this->queryBuilder();
+        $connection = Database::instance()->connection;
+        $result = $connection->query($query);
+        $this->response = [
+            "method"=> $this->request["method"],
+            "status"=>"success",
+            "timestamp"=>time(),
+            "data"=>Array()
+        ];
+        while($value = $result->fetch_assoc()){
+            array_push($this->response["data"], $value);
+        }
+        return json_encode($this->response, JSON_UNESCAPED_SLASHES);
+    }
+    private function getAllWineries(){
 
 
     }
+    private function getAllWines(){
+
+    }
+
+    private function queryBuilder(){
+        $query = "select * ";
+        if($this->request["method"] === "GetAllWineries")
+            $query .= "from Winery \n";
+        else if ($this->request["method"] === "GetAllWines")
+            $query .= "from Wines \n";
+        if(isset($this->request["search"])){
+            $query .= "where ";
+            $counter = 0;
+            foreach($this->request["search"] as $key => $value){
+                $query.= $key ."='$value'";
+                if($counter < sizeof($this->request["search"])-1)
+                    $query .= " and ";
+                $counter++;
+            }
+            $query .= "\n";
+        }
+        if(isset($this->request["sort"])){
+            $query .= "order by ".$this->request["sort"];
+            if(isset($this->request["order"]))
+                $query.= " ".$this->request["order"];
+            $query .= "\n";
+        }
+        $query .= ";";
+        return $query;
+    }
+
+
 }
-
-
+$winey = Array(
+    "method"=>"GetAllWineries",
+    "sort" => ["WineryName", "StreetName", "City", "Province"],
+    "order" => "ASC",
+    "search"=>Array(
+        "WineryName" => "Winey",
+        "StreetName"=>"Yes",
+        "City" => "CityNam",
+        "Province"=>"proovin"
+    )
+);
+$wines = Array(
+    "method" => "GetAllWines",
+    "sort"=> "Price",
+    "order"=> "ASC",
+    "search"=>Array(
+        "Region"=>"What everrr refuuu",
+        "Country"
+    )
+);
 
 
 $user = Array(
@@ -196,10 +244,21 @@ $tourist = Array(
     "manager" => false
 );
 
-$client = new Clients();
+header("Content-type: application/json");
+$user = file_get_contents("php://input");
 
-echo $client->signup($user["details"], $user["manager"]);
-echo "<br><br>";
-echo $client->login($tourist["details"], $tourist["manager"]);
+$client = new Clients($user);
+$winer = new Winery($user);
+$user = json_decode($user, true);
+if(isset($user["method"]) && isset($user["details"]) && isset($user["manager"]) && $user["method"]==="login"){
+    echo $client->login();
+}else if(isset($user["method"]) && isset($user["details"]) && isset($user["manager"]) && $user["method"]==="signup"){
+    echo $client->signup();
+}else {
+    echo ($winer->getResult());
+}
+//echo $client->signup($user["details"], $user["manager"]);
+//echo "<br><br>";
+//echo $client->login($tourist["details"], $tourist["manager"]);
 
 ?>
