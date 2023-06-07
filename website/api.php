@@ -7,17 +7,26 @@ class Clients{
         $this->request = json_decode($json, true);
     }
 
+    private function getWineryName($managerID){
+        $query = "select WineryName from Winery where ManagerID = ?";
+        $connection = Database::instance()->connection;
+        $statement = $connection->prepare($query);
+        $statement->bind_param("s", $managerID);
+        $statement->execute();
+        $result = $statement->get_result()->fetch_assoc();
+        return $result["WineryName"];
+    }
     public function login(){
         $details = $this->request["details"];
-        $manager = $this->request["manager"];
-        if($this->emailExists($details["Email"], $manager)){
+        $isManager = $this->request["manager"];
+        if($this->emailExists($details["Email"], $isManager)){
             $email = $details["Email"];
             $connection = Database::instance()->connection;
             $query = "";
-            if($manager){
-                $query = "select Password, Salt from Manager where Email = ?;";
+            if($isManager){
+                $query = "select * from Manager where Email = ?;";
             }else{
-                $query = "select Password, Salt from Tourists where Email = ?;";
+                $query = "select * from Tourists where Email = ?;";
             }
             $statement = $connection->prepare($query);
             $statement->bind_param("s", $email);
@@ -34,12 +43,22 @@ class Clients{
                 return $this->response;
             }else{
                 header("HTTP Status 200");
-                $this->response = json_encode(Array(
+                $this->response = Array(
                     "method" => "login",
                     "status" => "success",
                     "message" => "Access granted.",
-                    "timestamp"=> time()
+                    "timestamp"=> time(),
+                    "details"=>Array(
+                        "Name"=>$result["Name"],
+                        "Surname"=>$result["Surname"],
+                        "Email"=>$result["Email"],
+                        "Nationality"=>$result["Nationality"]
                 ));
+                if($isManager){
+                    $managerID = $result["ManagerID"];
+                    $this->response["details"]["WineryName"] = $this->getWineryName($managerID);
+                }
+                $this->response = json_encode($this->response);
                 return $this->response;
             }
 
@@ -89,11 +108,37 @@ class Clients{
             }else return true;
         }
     }
+    private function addWineryManager($wineryName, $managerId){
+        $connection = Database::instance()->connection;
+        $statement = $connection->prepare("update Winery
+                                set ManagerID = ?
+                                where WineryName = ?;");
+        $statement->bind_param("ss", $managerId, $wineryName);
+        $statement->execute();
+    }
+    private function wineryHasManager($wineryName){
+        $connection = Database::instance()->connection;
+        $query = "select ManagerID from Winery where WineryName = ?";
+        $statement = $connection->prepare($query);
+        $statement->bind_param("s", $wineryName);
+        $statement->execute();
+        $result = $statement->get_result();
+        $result = $result->fetch_assoc();
+        // print_r($result);
+        // print_r($result["ManagerID"]===NULL);
+        // echo gettype($result["ManagerID"]);
+        if($result["ManagerID"]===NULL){
+            return false;
+        }else {
+            return true;
+        }
+    }
     public function signup(){
         $details = $this->request["details"];
-        $manager = $this->request["manager"];
+        $isManager = $this->request["manager"];
         $connection = Database::instance();
-        if($this->emailExists($details["Email"], $manager)){
+
+        if($this->emailExists($details["Email"], $isManager)){
             header("HTTP Status 200");
             $email = $details["Email"];
             $this->response = json_encode(Array(
@@ -104,26 +149,43 @@ class Clients{
             ));
             return $this->response;
         }
-            $salt = $this->generateSalt();
-            $query = "";
+        if($isManager && $this->wineryHasManager($details["WineryName"]) ){
+            header("HTTP Status 200");
+            $this->response = json_encode(Array(
+                "method" => "signup",
+                "status" => "error",
+                "message" => "Sorry, winery already has a manager. Wineries can't have more than 1 manager",
+                "timestamp"=> time()
+            ));
+            return $this->response;
+        }
+        $salt = $this->generateSalt();
+        $query = "";
 
-            if(!$manager){
-                $query = "insert into Tourists (Name, Surname, Nationality, Email, Password, Salt)
-                        values (?, ?, ?, ?, ?, ?);";
-            }else {
-                $query = "insert into Manager (Name, Surname, Nationality, Email, Password, Salt)
-                        values (?, ?, ?, ?, ?, ?);";
-            }
-            $name = $details["Name"];
-            $surname = $details["Surname"];
-            $nationality = $details["Nationality"];
-            $email = $details["Email"];
-            $password = $details["Password"];
-            $statement = $connection->connection->prepare($query);
-            $passwordhash = password_hash($password.$salt, PASSWORD_ARGON2ID, ["cost"=>10]);
-            $statement->bind_param("ssssss", $name , $surname, $nationality, $email, $passwordhash , $salt);
+        if(!$isManager){
+            $query = "insert into Tourists (Name, Surname, Nationality, Email, Password, Salt)
+                    values (?, ?, ?, ?, ?, ?);";
+        }else {
+            $query = "insert into Manager (Name, Surname, Nationality, Email, Password, Salt)
+                    values (?, ?, ?, ?, ?, ?);";
+        }
+        $name = $details["Name"];
+        $surname = $details["Surname"];
+        $nationality = $details["Nationality"];
+        $email = $details["Email"];
+        $password = $details["Password"];
+        $statement = $connection->connection->prepare($query);
+        $passwordhash = password_hash($password.$salt, PASSWORD_ARGON2ID, ["cost"=>10]);
+        $statement->bind_param("ssssss", $name , $surname, $nationality, $email, $passwordhash , $salt);
+        $statement->execute();
+
+        if($isManager){
+            $statement = $connection->connection->prepare("select ManagerID from Manager where Email = ?;");
+            $statement->bind_param("s", $email);
             $statement->execute();
-
+            $result = $statement->get_result()->fetch_assoc();
+            $this->addWineryManager($details["WineryName"], $result["ManagerID"]);
+        }
         header("HTTP Status 200");
         $this->response = json_encode(Array(
             "method" => "signup",
@@ -139,23 +201,38 @@ class Clients{
 
 class Winery{
     private $request;
-    private $response;
-    private $sortArray = ["AverageRating", "WineName", "Price", "AlcoholPercentage", "Year", "Type", "Region", "Varietal"];
-    private $searchArray = ["AverageRating", "WineName", "Price", "AlcoholPercentage", "Year", "Type", "Region", "Varietal"];
+    private $response = null;
+    private $winesColumns = ["AverageRating", "WineName", "Price", "AlcoholPercentage", "Year", "Type", "Region", "Varietal"];
+    private $wineryColumns = ["WineryID", "WineryName", "StreetNo", "StreetName", "City", "Province", "PostalCode", "PhoneNumber"];
     public function __construct($json){
-        $this->request = json_decode($json);
+        $this->request = json_decode($json, true);
         $this->validateRequest();
     }
     private function validateRequest(){
 
+        if(!isset($this->request["method"])){
+            $this->response = Array(
+            "status"=>"error",
+            "message"=>"Method parameter missing",
+            "timestamp"=>time(),
+            );
+        }else{
+            $method = $this->request["method"];
+            if($method === "GetAll");
+        }
+
     }
     public function getResult(){
+        if($this->response !== null){
+            return json_encode($this->response);
+        }
         $query = $this->queryBuilder();
         $connection = Database::instance()->connection;
         $result = $connection->query($query);
         $this->response = [
             "method"=> $this->request["method"],
             "status"=>"success",
+            "message"=>"Operation successful",
             "timestamp"=>time(),
             "data"=>Array()
         ];
@@ -201,49 +278,6 @@ class Winery{
 
 
 }
-$winey = Array(
-    "method"=>"GetAllWineries",
-    "sort" => ["WineryName", "StreetName", "City", "Province"],
-    "order" => "ASC",
-    "search"=>Array(
-        "WineryName" => "Winey",
-        "StreetName"=>"Yes",
-        "City" => "CityNam",
-        "Province"=>"proovin"
-    )
-);
-$wines = Array(
-    "method" => "GetAllWines",
-    "sort"=> "Price",
-    "order"=> "ASC",
-    "search"=>Array(
-        "Region"=>"What everrr refuuu",
-        "Country"
-    )
-);
-
-
-$user = Array(
-    "method" => "signup",
-    "details" => Array(
-        "Name" => "Given",
-        "Surname"=>"Chauke",
-        "Nationality"=>"South Africa",
-        "Email" => "mrsleepyhead@gmail.com",
-        "Password" => "3rdStrongP@ssword"
-    ),
-    "manager" => true
-);
-
-$tourist = Array(
-    "method" => "login",
-    "details" => Array(
-        "Email" => "mrfrontend@gmail.com",
-        "Password" => "2ndStrongP@ssword"
-    ),
-    "manager" => false
-);
-
 header("Content-type: application/json");
 $user = file_get_contents("php://input");
 
@@ -257,8 +291,4 @@ if(isset($user["method"]) && isset($user["details"]) && isset($user["manager"]) 
 }else {
     echo ($winer->getResult());
 }
-//echo $client->signup($user["details"], $user["manager"]);
-//echo "<br><br>";
-//echo $client->login($tourist["details"], $tourist["manager"]);
-
 ?>
