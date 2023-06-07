@@ -13,11 +13,15 @@
             <label for="email">Email:</label>
             <input type="email" name="email" id="email" placeholder="Email address"><br> 
             <label for="password">Password:</label>
-            <input type="password" name="password" id="password" placeholder="Password"><br>         
+            <input type="password" name="password" id="password" placeholder="Password"> 
+            <h2 >Are you a manager: </h2>
+            <select id="select">
+            <option value="NO">NO</option>
+            <option value="YES">YES</option>
+            </select>        
             <input type="submit" value="LOGIN" id="submit"><br>
             <a href="signup.php" >Create new account</a>
         </form>
-        
         </div>
         <?php
         include ('footer.php');
