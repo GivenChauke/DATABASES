@@ -165,14 +165,13 @@
                 {
                     console.log(req.responseText);
                     arr = JSON.parse(req.responseText);
-                    console.log(arr);
-                    //window.location.href = 'managerView.php';
-                    alert("yay");
+                    alert(arr.message);
+                    window.location.href = 'managerView.php';
                 }
                 else {
                     console.log(req.responseText);
                     arr = JSON.parse(req.responseText);
-                    console.log(arr);
+                    alert(arr.message);
                     console.log("not succesful");
                 }
             }
