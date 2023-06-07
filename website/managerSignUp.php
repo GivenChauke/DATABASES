@@ -14,6 +14,8 @@
             <input type="name" name="name" id="name"><br>
             <label for="surname">Surname:</label>
             <input type="surname" name="surname" id="surname"><br>
+            <label for="country">Select your Country:</label>
+            <select name="country" id="country"></select>
             <label for="email">Email:</label>
             <input type="email" name="email" id="email"><br> 
             <label for="password">Password:</label>
@@ -31,17 +33,42 @@
         <script>
             window.onload = init;
             function init(){
+            const countrySelect = document.getElementById('country');
+            fetch('https://restcountries.com/v3.1/all')
+            .then(response => response.json())
+            .then(data => {
+                data.sort((a, b) => {
+                const nameA = a.name.common.toUpperCase();
+                const nameB = b.name.common.toUpperCase();
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+                return 0;
+                });
+            data.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.cca2;
+                option.text = country.name.common;
+                countrySelect.appendChild(option);
+            });
+            })
+            .catch(error => {
+            console.error('Error fetching country data:', error);
+            });
             var req = new XMLHttpRequest();
             var parem = {
-                    "studentnum":"u21595969",
-                    "type":"GetAllWineries"
+                    "method":"GetAllWineries"
                 };
             req.onreadystatechange = function()
             {
                 if(req.readyState == 4 && req.status == 200)
                 {
                     var arr = JSON.parse(req.responseText);
-                    arr = JSON.parse(arr.data);
+                    arr = arr.data;
+                    console.log(arr);
                     const dropdown = document.getElementById('select');
                     for(var i =0; i < arr.length;i++)
                     {
@@ -51,19 +78,21 @@
                     
                 }
             }
-            req.open("POST", "api-1.php", true);
+            req.open("POST", "api.php", true);
             req.send(JSON.stringify(parem));
             const form = document.getElementById("myForm");
             const name = document.getElementById("name");
             const surname = document.getElementById("surname");
             const email = document.getElementById("email");
             const pass = document.getElementById("password");
+            const dropdown = document.getElementById('select');
+            const country = document.getElementById('country');
            form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			const isValid = validate();
 			if (isValid) {
-                window.location.href = 'index.php';
-				//submitForm();
+                
+				submitForm();
 			}
 		    });
            function ValidateEmail(inputText)
@@ -113,45 +142,43 @@
            return true;
            
            }
-           /*const submitForm = () => {
-			const xhr = new XMLHttpRequest();
-			xhr.open('POST', 'signup-validation.php');
-			xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-			xhr.onload = () => {
-				if (xhr.status === 200) {
-					const response = JSON.parse(xhr.responseText);
-                    localStorage.setItem('apikey', response.apikey);
-                    localStorage.setItem('username', response.username);
-                    localStorage.setItem('theme', 'light');
-                    console.log(response);
-					if (response.status === 'success') {
-						
-                        const req = new XMLHttpRequest();
-                        req.open('POST', 'header.php');
-                        req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                        req.onload = () => {
-                            if (req.status === 200) {
-                                const res = JSON.parse(req.responseText);
-                                if (res.status === 'success') {
-                                    alert(res.username+' registered successfully!\n Your apikey is: '+response.apikey);
-                                    window.location.href = 'index.php';
-                                }
-                            }
-
-                        };
-                        req.send(`name=${name.value}`);
-						
-					}
-				}
+            const submitForm = () => {
+                /**Name, Surname, Nationality, Email, Password */
+                var arr;
+            console.log(dropdown.value+" "+country.value);
+			var req = new XMLHttpRequest();
+            var parem = {
+                    "method":"signup",
+                    "details":{
+                        "Name":name.value,
+                        "Surname":surname.value,
+                        "Nationality":country.value,
+                        "Email":email.value,
+                        "Password":password.value,
+                        "WineryName":dropdown.value
+                    },
+                    "manager":true
+                };
+            req.onreadystatechange = function()
+            {
+                if(req.readyState == 4 && req.status == 200)
+                {
+                    console.log(req.responseText);
+                    arr = JSON.parse(req.responseText);
+                    console.log(arr);
+                    //window.location.href = 'managerView.php';
+                    alert("yay");
+                }
                 else {
-                        const response = JSON.parse(xhr.responseText);
-                        console.log(response);
-						alert(response.error);
-					}
-			};
-			xhr.send(`name=${name.value}&surname=${surname.value}&email=${email.value}&password=${password.value}`);
-            
-		};*/
+                    console.log(req.responseText);
+                    arr = JSON.parse(req.responseText);
+                    console.log(arr);
+                    console.log("not succesful");
+                }
+            }
+            req.open("POST", "api.php", true);
+            req.send(JSON.stringify(parem));
+		};
     }
 	</script>
     </body>
