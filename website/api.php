@@ -295,12 +295,12 @@ class Winery{
 
 }
 function addRating($request){
-    if(isset($request["TouristID"]) && isset($request["WineID"]) && isset($request["Rating"]) && isset($request["RatedWineName"])){
+    if(isset($request["TouristID"]) && isset($request["WineID"]) && isset($request["Rating"])){
         $connection = Database::instance()->connection;
         $query = "insert into Rating(TouristID, WineID, Rating)
                     values (?, ?, ?);";
         $statement = $connection->prepare($query);
-        $statement->bind_param("ssss", $request["TouristID"],  $request["WineID"],  $request["Rating"]);
+        $statement->bind_param("sss", $request["TouristID"],  $request["WineID"],  $request["Rating"]);
         $statement->execute();
         return json_encode(Array(
             "method"=>"rating",
