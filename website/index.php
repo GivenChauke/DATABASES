@@ -38,12 +38,10 @@ temp.classList.add("active");
 });
 window.onload = init;
 function init(){
+console.log(localStorage.getItem('TouristId')):
 var req = new XMLHttpRequest();
 var parem = {
-    "studentnum": "u21595969", // this would be username
-    "type": "GetAllCars",
-    "limit": 100,
-    "return": "*"
+    "method": "GetAllWines"
 };
 req.onreadystatechange = function() {
     if (req.readyState == 4 && req.status == 200) {
@@ -129,7 +127,7 @@ req.onreadystatechange = function() {
         }
     }
 };
-req.open("POST", "api-1.php", true);
+req.open("POST", "api.php", true);
 req.send(JSON.stringify(parem));
 
 const sortButton = document.getElementById("sort-button");
