@@ -53,10 +53,13 @@ class Clients{
                         "Surname"=>$result["Surname"],
                         "Email"=>$result["Email"],
                         "Nationality"=>$result["Nationality"]
+                        
                 ));
                 if($isManager){
                     $managerID = $result["ManagerID"];
                     $this->response["details"]["WineryName"] = $this->getWineryName($managerID);
+                }else{
+                    $this->response["details"]["TouristID"] = $result["TouristID"];
                 }
                 $this->response = json_encode($this->response);
                 return $this->response;
@@ -124,11 +127,14 @@ class Clients{
         $statement->execute();
         $result = $statement->get_result();
         $result = $result->fetch_assoc();
-        if($result !== NULL &&$result["ManagerID"]===NULL){
-            return false;
-        }else {
-            return true;
+        while ($result !== null && $row = $result->fetch_assoc()) {
+            if($result["ManagerID"]===NULL){
+                return false;
+            }else {
+                return true;
+            }
         }
+        return false;
     }
     public function signup(){
         $details = $this->request["details"];
