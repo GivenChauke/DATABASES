@@ -18,9 +18,8 @@
             <input type="email" name="email" id="email"><br> 
             <label for="password">Password:</label>
             <input type="password" name="password" id="password"><br>  
-            <label for="name">Winery Name:</label>
-            <input type="Wineryname" name="Wineryname" id="WineryName"><br>
-
+            <label for="WineryName">Winery Name:</label>
+            <select name ="WineryName" id="select"></select>
             <input type="submit" value="SignUp" id="submit"><br>
             <a href="login.php" >Already have an account?</a>
             <a href="Signup.php" >Not a manager?</a>
@@ -30,12 +29,35 @@
         include ('footer.php');
         ?>
         <script>
+            window.onload = init;
+            function init(){
+            var req = new XMLHttpRequest();
+            var parem = {
+                    "studentnum":"u21595969",
+                    "type":"GetAllWineries"
+                };
+            req.onreadystatechange = function()
+            {
+                if(req.readyState == 4 && req.status == 200)
+                {
+                    var arr = JSON.parse(req.responseText);
+                    arr = JSON.parse(arr.data);
+                    const dropdown = document.getElementById('select');
+                    for(var i =0; i < arr.length;i++)
+                    {
+                    dropdown.innerHTML  += "<option value="+arr[i].WineryName+">"+arr[i].WineryName+"</option>";
+                    }
+                    
+                    
+                }
+            }
+            req.open("POST", "api-1.php", true);
+            req.send(JSON.stringify(parem));
             const form = document.getElementById("myForm");
             const name = document.getElementById("name");
             const surname = document.getElementById("surname");
             const email = document.getElementById("email");
             const pass = document.getElementById("password");
-            const winery= document.getElementById("WineryName");
            form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			const isValid = validate();
@@ -88,11 +110,6 @@
             else if(validatePassword(pass.value) == false) 
            {alert("Your pass is not strong enough:\n it must be 8 characters long, contain lower and upper case letter\n and atleast one digit and symbol");
            return false;}
-           if(winery.value==="")
-            {
-                alert("please enter the name of your winery");
-                return false;
-            }
            return true;
            
            }
@@ -135,7 +152,7 @@
 			xhr.send(`name=${name.value}&surname=${surname.value}&email=${email.value}&password=${password.value}`);
             
 		};*/
-
+    }
 	</script>
     </body>
 </HTML>
