@@ -124,7 +124,7 @@ class Clients{
         $statement->execute();
         $result = $statement->get_result();
         $result = $result->fetch_assoc();
-        if($result["ManagerID"]===NULL){
+        if($result !== NULL && $result["ManagerID"]===NULL){
             return false;
         }else {
             return true;
@@ -199,8 +199,6 @@ class Clients{
 class Winery{
     private $request;
     private $response = null;
-    private $winesColumns = ["AverageRating", "WineName", "Price", "AlcoholPercentage", "Year", "Type", "Region", "Varietal"];
-    private $wineryColumns = ["WineryID", "WineryName", "StreetNo", "StreetName", "City", "Province", "PostalCode", "PhoneNumber"];
     public function __construct($json){
         $this->request = json_decode($json, true);
         $this->validateRequest();
@@ -288,6 +286,30 @@ class Winery{
 
 
 }
+
+function addRating($request){
+    if(isset($request["TouristID"]) && isset($request["WineID"]) && isset($request["Rating"]) && isset($request["RatedWineName"])){
+        $connection = Database::instance()->connection;
+        $query = "insert into Rating(TouristID, WineID, Rating)
+                    values (?, ?, ?);";
+        $statement = $connection->prepare($query);
+        $statement->bind_param("ssss", $request["TouristID"],  $request["WineID"],  $request["Rating"]);
+        $statement->execute();
+        return json_encode(Array(
+            "method"=>"rating",
+            "status"=>"success",
+            "message"=>"Rating added"
+        ));
+    }else{
+        return json_encode(Array(
+            "method"=>"rating",
+            "status"=>"error",
+            "message"=>"Post parameters are missing"
+        ));
+    }
+    
+}
+
 header("Content-type: application/json");
 $user = file_get_contents("php://input");
 
@@ -298,7 +320,10 @@ if(isset($user["method"]) && isset($user["details"]) && isset($user["manager"]) 
     echo $client->login();
 }else if(isset($user["method"]) && isset($user["details"]) && isset($user["manager"]) && $user["method"]==="signup"){
     echo $client->signup();
-}else {
+}else if(isset($user["method"]) && $user["method"]==="rating"){
+    echo addRating($user);
+}
+else {
     echo ($winer->getResult());
 }
 ?>
