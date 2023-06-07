@@ -27,9 +27,7 @@
         include ('footer.php');
         ?>
         <script>
-window.onload = init;
-function init(){
-var temp = document.getElementById("index");
+  var temp = document.getElementById("index");
 temp.classList.add("active");
  window.addEventListener("load",()=>{
     const loader = document.querySelector(".loader");
@@ -38,7 +36,8 @@ temp.classList.add("active");
         loader.remove();
     })
 });
-
+window.onload = init;
+function init(){
 var req = new XMLHttpRequest();
 var parem = {
     "studentnum": "u21595969", // this would be username
