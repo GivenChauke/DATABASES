@@ -30,12 +30,12 @@
             const form = document.getElementById("myForm");
             const email = document.getElementById("email");
             const pass = document.getElementById("password");
+            const select = document.getElementById("select");
            form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			const isValid = validate();
 			if (isValid) {
-                window.location.href = 'index.php';
-				//submitForm();
+                submitForm();
 			}
 		    });
            function ValidateEmail(inputText)
@@ -77,57 +77,40 @@
            return true;
            
            }
-           /*const submitForm = () => {
-			const xhr = new XMLHttpRequest();
-			xhr.open('POST', 'validate-login.php');
-			xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-			xhr.onload = () => {
-				if (xhr.status === 200) {
-					const response = JSON.parse(xhr.responseText);
-                    localStorage.setItem('apikey', response.apikey);
-                    localStorage.setItem('username', response.username);
-                    if(response.filter != null)
-                    {
-                        localStorage.setItem('filter',response.filter);
-                    }
-                    else localStorage.setItem('filter','default');
-                    if(response.css === '1')//true for dark false for light
-                    {
-                        localStorage.setItem('theme', 'dark');
-                    }//we should get this from the response 
-                    else localStorage.setItem('theme', 'light');
-                    console.log(response);
-					if (response.status === 'success') {
-						
-                        const req = new XMLHttpRequest();
-                        req.open('POST', 'header.php');
-                        req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                        req.onload = () => {
-                            if (req.status === 200) {
-                                const res = JSON.parse(req.responseText);
-                                if (res.status === 'success') {
-                                    alert(res.username+' logged in successfully!\n Your apikey is'+response.apikey+" theme is: " +localStorage.getItem('theme')+"user preferances "+response.filter);
-                                    window.location.href = 'index.php';
-                                    //set the localstorage theme to dark or light then in index check if local
-                                    //dom has theme to dark to update the queryselect to dark
-                                }
-                                
-                            }
-
-                        };
-                        req.send(`name=${response.username}`);
-						
-					}
-				}
+           const submitForm = () => {
+			var arr;
+            var temp;
+            if(select.value==="YES") temp = true;
+            else temp = false;
+			var req = new XMLHttpRequest();
+            var parem = {
+                    "method":"login",
+                    "details":{
+                        "Email":email.value,
+                        "Password":password.value
+                    },
+                    "manager":temp
+                };
+            req.onreadystatechange = function()
+            {
+                if(req.readyState == 4 && req.status == 200)
+                {
+                    arr = JSON.parse(req.responseText);
+                    console.log(arr);
+                    alert(arr.message);
+                    localStorage.setItem('TouristId', arr.details.TouristID);
+                    alert(arr.details.TouristID);
+                    window.location.href = 'index.php';
+                }
                 else {
-                        const response = JSON.parse(xhr.responseText);
-                        console.log(response);
-						alert(response.error);
-					}
-			};
-			xhr.send(`email=${email.value}&password=${password.value}`);
+                    arr = JSON.parse(req.responseText);
+                    alert(arr.message);
+                }
+            }
+            req.open("POST", "api.php", true);
+            req.send(JSON.stringify(parem));
             
-		};*/
+		};
 
 	</script>
         
