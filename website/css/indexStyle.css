@@ -25,7 +25,7 @@ a:hover{
 body{
     background-color: grey;
 }
-#container{
+#container,#wine-images{
     display:flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -38,33 +38,6 @@ body{
     gap: 80px;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 
-}
-.search{
-    width: 100%;
-    max-width: 700px;
-    background: white;
-    display:flex;
-    align-items: center;
-    border-radius: 60px;
-    padding: 10px 20px;
-    margin-top:0px;
-}
-.search input{
-    background: transparent;
-    flex: 1;
-    border:0;
-    outline: none;
-    padding: 24px 20px;
-    font:20px;
-
-}
-.search button{
-    border:0;
-    border-radius: 50px;
-    width: 55px;
-    height: 55px;
-    background: transparent;
-    cursor: pointer;
 }
 .wines{
     width:inherit;
@@ -245,4 +218,71 @@ input:checked ~ label{
 
 #sort-button:hover {
   background-color:darkslategray;
+}
+#search-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.search select{
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.search label{
+  display: block;
+  font-weight: bold;
+  width: 90%;
+  padding: 10px;
+}
+#searchButton{
+  width: 100%;
+  padding: 10px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.winery-div,#winery-details {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  width:70%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease;
+}
+
+.winery-div:hover {
+  transform: translateY(-5px);
+}
+
+.winery-div p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.winery-div p:first-child {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+#winery-div a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+#winery-div a:hover {
+  text-decoration: underline;
 }
