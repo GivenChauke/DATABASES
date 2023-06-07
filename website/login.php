@@ -99,7 +99,6 @@
                     console.log(arr);
                     alert(arr.message);
                     localStorage.setItem('TouristId', arr.details.TouristID);
-                    alert(arr.details.TouristID);
                     window.location.href = 'index.php';
                 }
                 else {
