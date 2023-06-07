@@ -124,9 +124,6 @@ class Clients{
         $statement->execute();
         $result = $statement->get_result();
         $result = $result->fetch_assoc();
-        // print_r($result);
-        // print_r($result["ManagerID"]===NULL);
-        // echo gettype($result["ManagerID"]);
         if($result["ManagerID"]===NULL){
             return false;
         }else {
@@ -223,9 +220,11 @@ class Winery{
 
     }
     public function getResult(){
+
         if($this->response !== null){
             return json_encode($this->response);
         }
+        
         $query = $this->queryBuilder();
         $connection = Database::instance()->connection;
         $result = $connection->query($query);
@@ -237,26 +236,37 @@ class Winery{
             "data"=>Array()
         ];
         while($value = $result->fetch_assoc()){
+            if(isset($value["ManagerID"]))
+                $value["Manager"] = $this->getManagerDetails($value["ManagerID"]);
             array_push($this->response["data"], $value);
         }
         return json_encode($this->response, JSON_UNESCAPED_SLASHES);
     }
-    private function getAllWineries(){
-
-
-    }
-    private function getAllWines(){
-
+    private function getManagerDetails($managerId){
+        $connection = Database::instance()->connection;
+        $query = "select * from Manager where ManagerID = ?";
+        $statement = $connection->prepare($query);
+        $statement->bind_param("s", $managerId);
+        $statement->execute();
+        $result = $statement->get_result();
+        $result = $result->fetch_assoc();
+        return $result;
     }
 
     private function queryBuilder(){
         $query = "select * ";
+        if($this->request["method"] === "GetWinery"){
+            $wineryId = $this->request["WineryID"];
+            $query .= "from Wines \n
+            where WineID in(select WineID from WineAvailability
+            where WineryID = '$wineryId')";
+        }
         if($this->request["method"] === "GetAllWineries")
             $query .= "from Winery \n";
         else if ($this->request["method"] === "GetAllWines")
             $query .= "from Wines \n";
         if(isset($this->request["search"])){
-            $query .= "where ";
+            if($this->request["method"] !== "GetWinery") $query .= "where ";
             $counter = 0;
             foreach($this->request["search"] as $key => $value){
                 $query.= $key ."='$value'";
