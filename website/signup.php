@@ -62,7 +62,7 @@
             const surname = document.getElementById("surname");
             const email = document.getElementById("email");
             const pass = document.getElementById("password");
-            const country = document.getElementId("country");
+            const country = document.getElementById("country");
            form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			const isValid = validate();
@@ -140,7 +140,7 @@
                     arr = JSON.parse(req.responseText);
                     console.log(arr);
                     alert(arr.message);
-                    //window.location.href = 'index.php';
+                    window.location.href = 'index.php';
                 }
                 else {
                     arr = JSON.parse(req.responseText);
