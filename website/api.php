@@ -124,10 +124,12 @@ class Clients{
         $statement->execute();
         $result = $statement->get_result();
         $result = $result->fetch_assoc();
-        if($result !== NULL && $result["ManagerID"]===NULL){
-            return false;
-        }else {
-            return true;
+    while($result !==null && $row = $result->fetch_assoc()) {
+            if($result !== NULL && $result["ManagerID"]===NULL){
+                return false;
+            }else {
+                return true;
+            }
         }
     }
     public function signup(){
