@@ -47,15 +47,14 @@
     //getAllwines to populate select
     var req = new XMLHttpRequest();
     var parem = {
-            "studentnum":"u21595969",
-            "type":"GetAllWines"
+            "method":"GetAllWines"
         };
     req.onreadystatechange = function()
     {
         if(req.readyState == 4 && req.status == 200)
         {
             var arr = JSON.parse(req.responseText);
-            arr = JSON.parse(arr.data);
+            arr = arr.data;
             const dropdown = document.querySelectorAll('select')
             for(var i =0; i < arr.length;i++)
             {
@@ -69,7 +68,7 @@
             
         }
     }
-    req.open("POST", "api-1.php", true);
+    req.open("POST", "api.php", true);
     req.send(JSON.stringify(parem));
 
 const searchButton = document.getElementById("searchButton");
@@ -83,39 +82,51 @@ function request() {
   const grapeVariety = document.getElementById('select-grapeVariety').value;
 
   const requestBody = {
-    studentnum: "u21595969",
-    type: "SearchWines"
+    "method": "GetAllWines",
+    "search":{
+    }
   };
 
   if (wineName) {
-    requestBody.wineName = wineName;
-  }
+  requestBody.search.wineName = wineName;
+}
 
-  if (city) {
-    requestBody.city = city;
-  }
+if (city) {
+  requestBody.search.Region = city;
+}
 
-  if (wineType) {
-    requestBody.wineType = wineType;
-  }
+if (wineType) {
+  requestBody.search.Type = wineType;
+}
 
-  if (yearFrom) {
-    requestBody.yearFrom = yearFrom;
-  }
-
-  if (grapeVariety) {
-    requestBody.grapeVariety = grapeVariety;
-  }
-
+if (yearFrom) {
+  requestBody.search.Vintage = yearFrom;
+}
+  var arr;
+  const imageContainer = document.getElementById('container');
+  imageContainer.innerHTML="";
   const req = new XMLHttpRequest();
   req.onreadystatechange = function() {
     if (req.readyState == 4 && req.status == 200) {
       var response = JSON.parse(req.responseText);
-      // Process the API response here
-      console.log(response);
+      arr = response.data;
+      for (var i = 0; i < arr.length; i++) {
+      const div = document.createElement('span');
+      const img = document.createElement('img');
+      img.setAttribute('src', arr[i].ImageURL);
+      img.classList.add('wines');
+      img.style.width = '300px';
+      img.style.height = '200px';
+
+      div.setAttribute('id', 'span');
+      div.appendChild(img);
+      div.innerHTML += "<p>Wine name: " + arr[i].WineName + "<br>Price: " + arr[i].Price + "<br>Wine type: " +
+      arr[i].Type + "<br>Region: " + arr[i].Region + "<br>Rating: " + arr[i].AverageRating + "<br> Rate wine" + "<p>";
+
+      imageContainer.appendChild(div);}
     }
   };
-  req.open("POST", "api-1.php", true);
+  req.open("POST", "api.php", true);
   req.send(JSON.stringify(requestBody));
 }
 suggestWinesByLocation();
@@ -155,16 +166,17 @@ function getCityName(latitude, longitude) {
         // Call your API with the city name to suggest wines based on location
         // Example:
         const requestBody = {
-          type: "GetAllWines"
+          "method": "GetAllWines"
         };
 
         // Make an API request using the city name to suggest wines based on location
         const imageContainer = document.getElementById('container');
+        
         const req = new XMLHttpRequest();
         req.onreadystatechange = function() {
           if (req.readyState == 4 && req.status == 200) {
             var arr = JSON.parse(req.responseText);
-            arr = JSON.parse(arr.data);
+            arr = arr.data;
             const dropdown = document.querySelectorAll('select')
             for (var i = 0; i < arr.length; i++) {
                 const region = arr[i].Region;
@@ -186,7 +198,7 @@ function getCityName(latitude, longitude) {
             }
           }
         };
-        req.open("POST", "api-1.php", true);
+        req.open("POST", "api.php", true);
         req.send(JSON.stringify(requestBody));
       } else {
         console.log("Unable to retrieve city name for the coordinates:", latitude, longitude);

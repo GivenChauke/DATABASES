@@ -62,12 +62,13 @@
             const surname = document.getElementById("surname");
             const email = document.getElementById("email");
             const pass = document.getElementById("password");
+            const country = document.getElementId("country");
            form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			const isValid = validate();
 			if (isValid) {
-                window.location.href = 'index.php';
-				//submitForm();
+                
+				submitForm();
 			}
 		    });
            function ValidateEmail(inputText)
@@ -117,45 +118,38 @@
            return true;
            
            }
-           /*const submitForm = () => {
-			const xhr = new XMLHttpRequest();
-			xhr.open('POST', 'signup-validation.php');
-			xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-			xhr.onload = () => {
-				if (xhr.status === 200) {
-					const response = JSON.parse(xhr.responseText);
-                    localStorage.setItem('apikey', response.apikey);
-                    localStorage.setItem('username', response.username);
-                    localStorage.setItem('theme', 'light');
-                    console.log(response);
-					if (response.status === 'success') {
-						
-                        const req = new XMLHttpRequest();
-                        req.open('POST', 'header.php');
-                        req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                        req.onload = () => {
-                            if (req.status === 200) {
-                                const res = JSON.parse(req.responseText);
-                                if (res.status === 'success') {
-                                    alert(res.username+' registered successfully!\n Your apikey is: '+response.apikey);
-                                    window.location.href = 'index.php';
-                                }
-                            }
-
-                        };
-                        req.send(`name=${name.value}`);
-						
-					}
-				}
+           const submitForm = () => {
+			var arr;
+            console.log(country.value);
+			var req = new XMLHttpRequest();
+            var parem = {
+                    "method":"signup",
+                    "details":{
+                        "Name":name.value,
+                        "Surname":surname.value,
+                        "Nationality":country.value,
+                        "Email":email.value,
+                        "Password":password.value
+                    },
+                    "manager":false
+                };
+            req.onreadystatechange = function()
+            {
+                if(req.readyState == 4 && req.status == 200)
+                {
+                    arr = JSON.parse(req.responseText);
+                    console.log(arr);
+                    alert(arr.message);
+                    //window.location.href = 'index.php';
+                }
                 else {
-                        const response = JSON.parse(xhr.responseText);
-                        console.log(response);
-						alert(response.error);
-					}
-			};
-			xhr.send(`name=${name.value}&surname=${surname.value}&email=${email.value}&password=${password.value}`);
-            
-		};*/
+                    arr = JSON.parse(req.responseText);
+                    alert(arr.message);
+                }
+            }
+            req.open("POST", "api.php", true);
+            req.send(JSON.stringify(parem));
+		};
     }
 	</script>
     </body>

@@ -32,8 +32,7 @@
     //getAllwineriescode
     var req = new XMLHttpRequest();
 var parem = {
-    "studentnum": "u21595969", // this would be username
-    "type":"GetAllWineries"
+    "method":"GetAllWineries"
 };
 /**"WineryName" => $row["WineryName"],
             "City"=>$row["City"],
@@ -44,21 +43,21 @@ var parem = {
 req.onreadystatechange = function() {
     if (req.readyState == 4 && req.status == 200) {
         var arr = JSON.parse(req.responseText);
-        arr = JSON.parse(arr.data);
+        arr = arr.data;
         var imageContainer = document.getElementById("container"); 
 
         for (var i = 0; i < arr.length; i++) {
             const div = document.createElement('div');
 
             div.setAttribute('class','winery-div');
-            div.setAttribute('id',arr[i].WineryId);
+            div.setAttribute('id',arr[i].WineryID);
             div.innerHTML+= "<p>Winery name: "+arr[i].WineryName+"<br>Province: "+arr[i].Province+"<br>Winery city: "+ 
             arr[i].City+"<br>Winery Description: "+arr[i].Description+"<br>Winery website: "+arr[i].Website+"<p>";
             imageContainer.appendChild(div);
         }
     }
 };
-req.open("POST", "api-1.php", true);
+req.open("POST", "api.php", true);
 req.send(JSON.stringify(parem));
 
 // Event listener for container element

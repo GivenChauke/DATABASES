@@ -25,15 +25,14 @@
 // Request to get winery details
 var wineryReq = new XMLHttpRequest();
 var wineryParams = {
-  "studentnum": "u21595969",
-  "type":"GetAllWineries"
+  "method":"GetAllWineries"
 };
 wineryReq.onreadystatechange = function() {
   if (wineryReq.readyState == 4 && wineryReq.status == 200) {
     var arr = JSON.parse(wineryReq.responseText);
-    arr = JSON.parse(arr.data);
+    arr = arr.data;
     for(let i = 0; i < arr.length;i++){
-    if (arr[i].WineryId === wineryId) {
+    if (arr[i].WineryID === wineryId) {
       displayWineryDetails(arr[i]);
     } else {
       console.log("Winery not found for ID: " + wineryId);
@@ -41,7 +40,7 @@ wineryReq.onreadystatechange = function() {
 }
   }
 };
-wineryReq.open("POST", "api-1.php", true);
+wineryReq.open("POST", "api.php", true);
 wineryReq.send(JSON.stringify(wineryParams));
 
 // Function to display winery details
@@ -56,13 +55,12 @@ function displayWineryDetails(winery) {
     //separate request
     var req = new XMLHttpRequest();
 var parem = {
-    "studentnum": "u21595969", // request using the winery id
-    "type": "GetAllWines"
+    "method": "GetAllWines"
 };
 req.onreadystatechange = function() {
     if (req.readyState == 4 && req.status == 200) {
         var arr = JSON.parse(req.responseText);
-        arr = JSON.parse(arr.data);
+        arr = arr.data;
         var imageContainer = document.getElementById("wine-images"); 
 
         for (var i = 0; i < arr.length; i++) {
@@ -143,7 +141,7 @@ req.onreadystatechange = function() {
         }
     }
 };
-req.open("POST", "api-1.php", true);
+req.open("POST", "api.php", true);
 req.send(JSON.stringify(parem));
 
 //rating code//
@@ -164,13 +162,23 @@ document.addEventListener('click', function(event) {
       checked = 5-i;
       break;
     }
-  }
-  console.log("stars checked is: "+checked);
-    var body={
-      "method":"UpdateRating",
-      "WineID":WineID
+    var req = new XMLHttpRequest();
+var parem = {
+    "method": "rating",
+    "TouristID":localStorage.getItem('TouristId'),
+    "WineID":WineID,
+    "rating":checked
+};
+req.onreadystatechange = function() {
+    if (req.readyState == 4 && req.status == 200) {
+        alert("wine with wineid "+WineID+" rated with "+checked);
     }
-    //api request//
+};
+req.open("POST", "api.php", true);
+req.send(JSON.stringify(parem));
+  }
+
+
   }
     </script>
 </body>
